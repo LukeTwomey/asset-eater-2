@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<link rel="stylesheet" href="reset.min.css" type="text/css" />
+	<link rel="stylesheet" href="style.css" type="text/css" />
+</head>
+
+<body>
+	<div id="wait">
+		<p>Please wait</p>
+		<img id="loading" src="/images/loading.gif"/>
+	</div>
+
+	<div id="csvDownloaded" class="hidden">
+		<p id="fileToSelect">*This gets populated with the name of the CSV file that DC downloaded*</p>
+
+		<label for="inputButton" class="button">
+		    Select File
+		</label>
+		<input type="file" id="inputButton" class="hidden"/>
+	</div>
+
+	<div id="complete" class="hidden">
+		<p>Assets downloaded.</p>
+		<img id="finished" src="/images/complete.png"/>
+	</div>
+	<script src="popup.js" async></script>
+</body>
+
+</html>
