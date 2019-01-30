@@ -11,11 +11,10 @@
 
 ## Usage
 
-1. Open the DoubleClick folder containing all the folders you want to downlad.
-2. Check the boxes from the folders you want to download.
-3. Click on the extension button.
-4. Upload the file it will be downloaded for you when the extension ask you for it.
-5. That's it! Go to your Downloads directory, all your assets are there sorted by folders.
+1. Check the box of the DoubleClick folder containing all the files you want to download.
+2. Click on the extension button, and wait for prompt telling you to "Select file".
+3. Click the red "Select File" button and choose the .csv file which has just been downloads to teh downloads folder.
+4. That's it! Go to your Downloads directory, all your assets should be there.
 
 ### Requirements
 
