@@ -20,7 +20,6 @@ window.onload = function() {
 	var assetList = [];
 	var inputbutton = document.getElementById('inputButton');
 	var fileDisplayArea = document.getElementById('list');
-	var csvFilename;
 
 	downloadCSV();
 
@@ -29,16 +28,14 @@ window.onload = function() {
 	** Analyse the request and direct it to appropriate function.
 	*/
 	chrome.runtime.onMessage.addListener(function(request, sender, sendResponse){
-
-		// If the message text is 'csv', the background.js script is letting you know the CSV file has finished downloading.
-		if(request.message.includes("csv")){
-
-			csvFilename = request.message;		
-			// customise the message the user sees, so they know the filename of the file they need to select
-			document.getElementById("fileToSelect").innerHTML = "Please select <br><strong>" + csvFilename + "</strong><br> from Downloads folder";
-			// start the process of getting the paths from the checked creatives on the page
-			getCheckedCreatives();
-
+		// If the message text is 'complete', the background.js script is letting you know the CSV file has finished downloading.
+		if(request.message === "complete"){
+			// If you have not yet got the folder name and base path for all the checked rows, request the next row to be clicked.
+			if (allCheckedCreativesClicked == false){
+		  		getCheckedCreatives();
+		  	} else {
+		  		chrome.extension.sendMessage({message: "showDownloadsFolder"});
+		  	}
 		} else {
 			// The content script is sending you details for the currently highlighted row. 
 			// Log it and request the next one if required.
@@ -46,7 +43,6 @@ window.onload = function() {
 		  	if(basePaths.length < numberOfCheckedCreatives.length){
 		    	getFolderDetails();
 		    } else {
-		    	// chrome.extension.sendMessage({message: "showDownloadsFolder"});
 		    	// reset things because you're finished
 		    	numberOfCheckedCreatives = 0;
 		    	// set a flag to say you've got all of the folder details you need
@@ -55,8 +51,7 @@ window.onload = function() {
 		    	document.getElementById("wait").classList.add("hidden");
 		    	document.getElementById("csvDownloaded").classList.remove("hidden");
 		    }
-
-		}
+		  }
 	});
 
 	/* 
@@ -83,10 +78,6 @@ window.onload = function() {
 		}
 	});
 
-	// function showDownloadsFolder(){
-	// 	chrome.extension.sendMessage({message: "showDownloadsFolder"});
-	// }
-
 	/*
 	** Asks the content script to start the "Dynamic paths" CSV file downloading
 	*/
@@ -99,13 +90,16 @@ window.onload = function() {
 	function ensureSendMessage(tabId, message, callback){
 	  chrome.tabs.sendMessage(tabId, {ping: true}, function(response){
 	    if(response && response.pong) { // Content script ready
+	    	console.log("Response received. Content script ready. Sending message.");
 	      chrome.tabs.sendMessage(tabId, message, callback);
 	    } else { // No listener on the other end
+	    	console.log("Nothing received. Injecting Content script before sending message.");
 	      chrome.tabs.executeScript(tabId, {file: "content.js"}, function(){
 	        if(chrome.runtime.lastError) {
 	          throw Error("Unable to inject script into tab " + tabId);
 	        }
 	        // OK, now it's injected and ready
+	        console.log("Script has now been injected but it's still not responding to messages.")
 	        chrome.tabs.sendMessage(tabId, message, callback);
 	      });
 	    }
@@ -170,16 +164,9 @@ window.onload = function() {
 			});
 	  	}
 
-	  	// Pop up the downloads folder for convenience
-	  	chrome.extension.sendMessage({message: "showDownloadsFolder"});
-
-	  	// Confirm to the user that the files have been downloaded
 	  	document.getElementById("csvDownloaded").classList.add("hidden");
 		document.getElementById("complete").classList.remove("hidden");
 	}
-
-
-
 
 	/*
 	** Process the CSV file and create an array from its contents

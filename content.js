@@ -13,7 +13,38 @@ window.onload = function() {
 	var currentCheckedCreative = 0;
 	var folderBasePath;
 
-	addObserverIfDesiredNodeAvailable();
+	/* 
+	** Watch for changes to the details panel on the right hand side of the page.
+	** When you detect a change (i.e. the details for the row that's just been clicked on have loaded),
+	** get the name and base path for that row, then set a flag to say the next row can now be clicked on.
+	*/
+	var observer = new MutationObserver(function(mutations) {
+		mutations.forEach(function(mutation) {
+		  if (mutation.addedNodes.length > 0 && mutation.addedNodes[0].nodeName === "DIV"){
+			  if (document.getElementById("gwt-debug-assets-details-panel-name")){
+				  currentFolderName = document.getElementById("gwt-debug-assets-details-panel-name").innerHTML;
+			  }
+			  if (document.getElementById("gwt-debug-assets-details-panel-folder-base-path")){
+				  currentFolderBasePath = document.getElementById("gwt-debug-assets-details-panel-folder-base-path").value;
+			  }
+			  detailsPanelChanged = true;
+		  }
+		});    
+	  });
+
+	checkObserverExistence();
+
+	/*
+	** If the mutationobserver has not yet been created, then keep trying and when it does exist, 
+	** make it observe the asset details panel in the DOM
+	*/
+	function checkObserverExistence() {
+		if(!observer) {
+			window.setTimeout(checkObserverExistence,500);
+			return;
+		}
+		addObserverIfDesiredNodeAvailable()
+	}
 
 	/* 
 	** Listen for messages being sent from other parts of the extension. 
@@ -34,25 +65,6 @@ window.onload = function() {
 			}
 		}
 	);
-
-	/* 
-	** Watch for changes to the details panel on the right hand side of the page.
-	** When you detect a change (i.e. the details for the row that's just been clicked on have loaded),
-	** get the name and base path for that row, then set a flag to say the next row can now be clicked on.
-	*/
-	var observer = new MutationObserver(function(mutations) {
-	  mutations.forEach(function(mutation) {
-	    if (mutation.addedNodes.length > 0 && mutation.addedNodes[0].nodeName === "DIV"){
-	    	if (document.getElementById("gwt-debug-assets-details-panel-name")){
-	    		currentFolderName = document.getElementById("gwt-debug-assets-details-panel-name").innerHTML;
-	    	}
-	    	if (document.getElementById("gwt-debug-assets-details-panel-folder-base-path")){
-	    		currentFolderBasePath = document.getElementById("gwt-debug-assets-details-panel-folder-base-path").value;
-	    	}
-	    	detailsPanelChanged = true;
-	    }
-	  });    
-	});
 
 	/*
 	** Add the mutation observer to the details panel. If it's not yet been created (i.e. the page is still loading),
@@ -88,10 +100,8 @@ window.onload = function() {
 	** The user can choose which folders to download. Get all of the rows they have checked.
 	*/
 	function getCheckedCreatives(){
-		$("input[type='checkbox']:checked").each(function(){
-			if( $(this).parents(".HDO65V-b-Qd").length ){
-				checkedCreatives.push($(this).parents(".HDO65V-b-Qd"));
-			}
+		$("#gwt-debug-assets-table").find("input[type='checkbox']:checked").each(function(){
+			checkedCreatives.push($(this).closest("tr"));
 		});
 		return checkedCreatives;
 	}
@@ -101,6 +111,8 @@ window.onload = function() {
 	** to be set by the mutatiom observer, before sending the data from the details panel back to the popup
 	*/
 	function getFolderDetails(){
+		console.log(checkedCreatives);
+		console.log(currentCheckedCreative);
 		detailsPanelChanged = false;
 		checkedCreatives[currentCheckedCreative].click();
 		currentCheckedCreative++;

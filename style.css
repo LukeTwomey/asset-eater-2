@@ -17,10 +17,6 @@ body {
   text-align: center;
 }
 
-strong{
-  font-weight: bold!important;
-}
-
 .hidden{
   display: none!important;
 }

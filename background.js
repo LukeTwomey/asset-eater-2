@@ -1,4 +1,3 @@
-var fileToRemoveWhenComplete;
 
 /*
 ** Listen for the message from the popup to open the downloads folder when done
@@ -14,27 +13,6 @@ chrome.extension.onMessage.addListener( function(request,sender,sendResponse){
 */
 chrome.downloads.onChanged.addListener(function(delta){
   if (delta.state && delta.state.current === "complete") {
-    handleDownloadedFile(delta.id);
+    chrome.runtime.sendMessage({message: "complete"});
   }
 });
-
-function handleDownloadedFile(fileId){
-  chrome.downloads.search({
-    id: fileId
-  }, function(results){
-    fullFilename = results[0].filename;
-
-    if(fullFilename.includes("csv")){
-      splitFilename = fullFilename.split("/");
-      reversedFilename = splitFilename.reverse();
-      filename = reversedFilename[0];
-      fileToRemoveWhenComplete = fileId; // Save to global var to use later
-      sendMessage(filename);
-    }
-  })
-}
-
-
-function sendMessage(message){
-  chrome.runtime.sendMessage({message: message});
-}
